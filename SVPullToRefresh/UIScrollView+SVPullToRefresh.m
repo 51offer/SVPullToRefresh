@@ -15,6 +15,7 @@
 #define fequalzero(a) (fabs(a) < FLT_EPSILON)
 
 static CGFloat const SVPullToRefreshViewHeight = 60;
+static CGFloat const SVPullToRefreshAnimateWithDuration = 0.3;
 
 @interface SVPullToRefreshArrow : UIView
 
@@ -357,7 +358,7 @@ static char UIScrollViewPullToRefreshView;
 }
 
 - (void)setScrollViewContentInset:(UIEdgeInsets)contentInset {
-    [UIView animateWithDuration:0.3
+    [UIView animateWithDuration:SVPullToRefreshAnimateWithDuration
                           delay:0
                         options:UIViewAnimationOptionAllowUserInteraction|UIViewAnimationOptionBeginFromCurrentState
                      animations:^{
@@ -652,9 +653,11 @@ static char UIScrollViewPullToRefreshView;
         case SVPullToRefreshStateLoading:
             [self setScrollViewContentInsetForLoading];
             
-            if(previousState == SVPullToRefreshStateTriggered && pullToRefreshActionHandler)
-                pullToRefreshActionHandler();
-            
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(SVPullToRefreshAnimateWithDuration * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                if(previousState == SVPullToRefreshStateTriggered && pullToRefreshActionHandler)
+                    pullToRefreshActionHandler();
+            });
+
             break;
     }
 }
